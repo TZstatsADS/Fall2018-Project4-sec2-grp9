@@ -16,7 +16,7 @@ final_delete <- function(error){
   colnames(words) <- 'words' # colname is 'word'
  return(words)
   }
-final_delete('error')
+
 
 
 
