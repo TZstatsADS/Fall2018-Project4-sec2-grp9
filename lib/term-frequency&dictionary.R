@@ -10,7 +10,7 @@ terms <- Terms(AssociatedPress) #extract the unqiue terms
 
 
 
-dict <- data_frame(terms) # the dictionary 
+dict <- data.frame(terms) # the dictionary 
 colnames(dict) <- 'words' # create matrix for dictionary, and colname is 'words'
 
 
