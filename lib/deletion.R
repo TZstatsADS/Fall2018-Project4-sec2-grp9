@@ -1,7 +1,5 @@
 library(tm)
-
 library(topicmodels)
-
 library(stringr)
 
 data('AssociatedPress', package = 'topicmodels')
@@ -85,5 +83,41 @@ head(deltable, 50)
 
 ###### get deletion candidate ######
 get_deletion <- function(error_word) {
-  return(deltable[deltable$Key == error_word, ])
+  res <- deltable[deltable$Key == error_word, ]
+  if (nrow(res) == 0) {
+    return(NA)
+  }
+  else {
+    return(res)
+  }
 }
+
+false_word <- tesseract_vec[!tesseract_if_clean] # errors in file 5
+delete_choice <- lapply(false_word, get_deletion)
+delete_choice <- delete_choice[!is.na(delete_choice)]
+library(plyr)
+delete_candidate <- ldply(delete_choice) # deletion candidate as data frame
+
+library(stringi)
+
+# Convert back to correct version
+correction <- function(row){
+  can <- vector(, length = 2)
+  can[1] <- row[1]
+  
+  if(as.numeric(row[3] == 0)){
+    can[2] <- paste0(row[2], row[1])
+  }
+  if(as.numeric(row[3] == 1)){
+    can[2] <- paste0(stri_sub(row[1], 1, 1), row[2], 
+                     stri_sub(row[1], 2, nchar(row[1]))) 
+  }
+  else{
+    can[2] <- paste0(stri_sub(row[1], 1, as.numeric(row[3])), row[2], 
+                     stri_sub(row[1], as.numeric(row[3]) + 1, nchar(row[1])))  
+  }
+  return(can)
+}
+
+# return a data frame with error and corresponding correction
+final_deletion_can <- unique(t(apply(delete_candidate, 1, correction)))
