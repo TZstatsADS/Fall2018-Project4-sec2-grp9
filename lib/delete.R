@@ -5,7 +5,7 @@ delete <- function(error, letter, i){
   return(paste(substring(error, c(0, i), c(i-1,nchar(error)+1)), collapse=letter))
 
 }
-delete('error', 'j', 1)
+
 final_delete <- function(error){
   word_list <- list()
   for (i in 1 : (nchar(error)+1)){
