@@ -1,7 +1,7 @@
 library(plyr)
 
-df <- rbind(result_df, final_final)
-df <- split(df, f = result_df$originalerror)
+df <- rbind(result_df, final_final, results_sub)
+df <- split(df, f = result_df$error)
 
 find <- function(df){
   if(nrow(df[df$Rawscore == max(df$Rawscore), ]) != 1){
