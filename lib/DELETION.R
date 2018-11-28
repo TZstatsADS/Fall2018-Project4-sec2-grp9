@@ -1,53 +1,16 @@
 library(dplyr)
 library(tm)
-library(topicmodels)
 library(stringr)
 
-###############################################
-############deletion table#####################
-###############################################
-
-###calculate how many rows in the deletion table
-allterm <- as.data.frame(tf)
-wordlength <- function(wordlist){
-  sum <- 0
-  for (i in 1:nrow(wordlist)){
-    sum <- sum + nchar(wordlist$words[i])
-  }
-  return(sum)
-}
-nallchar <- wordlength(allterm)
-
-
-######for one word find the deletion cadidate######
-candidate <- function(word){
-  cand <- data.frame(matrix(ncol = 3, nrow = nchar(word)))
-  for (i in 1:nchar(word)){
-    word1 <- word
-    str_sub(word1, i, i) <- ''
-    cand[i,] <- c(word1, substr(word, i,i), i-1)
-  }
-  return(cand)
-}
-
-
-
-##########get the table for all terms#######
-deltable <- data.frame(matrix(ncol = 3, nrow = nallchar))
-len <- rep(NA, nrow(allterm))
-
-for (t in 1:nrow(allterm)){
-  if (t == 1){
-    len[t] <- nchar(allterm$words[t])
-    deltable[1:len[t], ] <- candidate(allterm$words[t])
-  }else{
-    len[t] <- nchar(allterm$words[t])
-    deltable[(sum(len[1:(t-1)])+1):sum(len[1:t]), ] <- candidate(allterm$words[t])
-  }
-}
-
+### load table needed ###
+wd <- getwd()
+load(paste(wd, '/lib/deletiontable.RData', sep = ""))
 deltable <- deltable[deltable$Correction %in% letters, ]
 
+load(paste(wd, '/lib/words.RData', sep = ""))
+load(paste(wd, '/lib/tf.RData', sep = ""))
+load(paste(wd, '/lib/two_char.RData', sep = ""))
+load(paste(wd, '/lib/char.RData', sep = ""))
 ######check the table##############
 colnames(deltable) <- c('Key', 'Correction', 'Position')
 
@@ -62,7 +25,7 @@ get_deletion <- function(error_word) {
   }
 }
 
-false_word <- tolower(tesseract_vec[!tesseract_if_clean]) # errors in file 5
+false_word <- tolower(tesseract_vec[!tesseract_if_clean]) # errors in file
 delete_choice <- lapply(false_word, get_deletion)
 delete_choice <- delete_choice[!is.na(delete_choice)]
 library(plyr)
