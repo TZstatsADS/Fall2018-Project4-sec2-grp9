@@ -1,0 +1,149 @@
+---
+title: "Score"
+author: "Peiu Zhang"
+date: "11/27/2018"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+false_word <- tolower(tesseract_vec[which(tesseract_if_clean==FALSE)])
+length(false_word)
+```
+
+```{r}
+# the insertion,delete the character from the error,find candicates
+aftermake = data.frame()
+
+for (i in 1:length(false_word)){
+  thisstr1 = false_word[i]
+  thisstr = tolower(false_word[i])
+  n = length(unlist(strsplit(thisstr, "")))
+  thisvec = c()
+  for (j in 1:n){
+     thismake1 = unlist(strsplit(thisstr, ""))[-j]
+     thismake2 = paste(thismake1, sep = "",collapse = "")
+     thisvec[j] = thismake2
+     
+  }
+  
+  thisdf_inser = data.frame(thisvec)
+  thisdf = cbind(rep(thisstr1,nrow(thisdf_inser)),thisdf_inser)
+  colnames(thisdf) = c("error","insertion")
+  thisdf$error = as.character(thisdf$error)
+  thisdf$insertion = as.character(thisdf$insertion)
+  aftermake = rbind(aftermake,thisdf)
+}
+
+aftermake$error  = as.character(aftermake$error)
+aftermake$insertion = as.character(aftermake$insertion)
+aftermake_df = data_frame(as.character(unlist(aftermake$insertion)))
+colnames(aftermake_df) = "words"
+#aftermake_df
+#aftermake
+```
+
+```{r}
+# confusion matrix of insertion typo
+add_mat = read.csv(file = "/Users/Boris/Documents/GitHub/Fall2018-Project4-sec2--sec2proj4_grp9/data/add_matrix.csv")
+```
+
+```{r}
+# the dictionary and charx
+library(dplyr)
+files <- list.files(path='/Users/Boris/Documents/GitHub/Fall2018-Project4-sec2--sec2proj4_grp9/data/ground_truth',pattern = '*.txt', full.names =TRUE  )
+words <- c()
+for (file in files ){
+  file
+  text <- readLines(file, warn = F)
+  text <- paste(text, collapse = " ")
+  text.words <- strsplit(text, split = "(\\s|[[:punct:]])+")[[1]]
+  words <- append(words, text.words)
+}
+words <- tolower(words)
+head(words) # the dictionary without duplication
+fq_table <- table(words) # the frequency of words from table function 
+
+N <- length(words) # how many words in ground truth 
+N
+vocabulary <- unique(words) # the unique words in dictionary 
+V  <- length(vocabulary)  # the number of unique words 
+V
+
+dict <- data.frame(matrix(vocabulary, ncol = 1))
+colnames(dict) <- 'words'
+head(dict)            # the dictionary made from matrix 
+
+frequency <- data_frame(words, ncol=1)
+colnames(frequency) <- c("words",'n')
+head(frequency, 20)
+frequency
+
+char <- table(strsplit(paste(words, collapse = ""), split = "")[[1]])[letters] # the chars for every character 
+
+```
+
+
+```{r}
+# find the insertion correction that in dictionary
+library(plyr)
+corrections = aftermake_df%>% 
+  inner_join(dict)
+
+freq_c = c()
+for (i in 1:nrow(unique(corrections))){
+  thiscor = as.character(unique(corrections)[i,])
+  r = as.numeric(tf[tf$words == thiscor,'nn'])
+  freq_c = c(freq_c,r+0.5)
+}
+freq_df = cbind(unique(corrections),freq_c)
+prior_ele = freq_c/(N+V/2)
+
+#channel_ele
+channel_ele = c()
+for(i in 1:nrow(unique(corrections))){
+thiscor = as.character(unique(corrections)[i,])
+errors =  unique(aftermake[aftermake$insertion == thiscor,'error'])
+n = length(errors)
+channel = c()
+  for (j in 1:n){
+      thiserror = errors[j]
+      #thiscor = aftermake$insertion[1]
+      #thiserror = aftermake$error[1]
+      index  =sum(strsplit(thiserror, "")[[1]] == strsplit(thiscor, "")[[1]])+1 # find the position of the deleting letter
+      thiserror1 = strsplit(thiserror, "")[[1]]
+      thiscor1 = strsplit(thiscor, "")[[1]]
+      #n1 = length(strsplit(thiserror, "")[[1]])
+      if (index == 1){
+        thischannel = 0
+      }else{
+        x = thiserror1[index-1]
+        y = thiserror1[index]
+        add_num = add_mat[add_mat$X == x, y]
+        #charx = sum(as.numeric(add_mat[add_mat$X == x, ]))
+        this_channel = add_num/char[x]
+      }
+       channel = c(channel,this_channel)
+  }
+ cor_channel = sum(channel)
+ channel_ele = c(channel_ele,cor_channel)
+}
+
+rawscore = prior_ele*channel_ele
+#percentage = round(rawscore/sum(rawscore)*100)
+corrections1 = unique(corrections)
+
+# find original error words
+n = nrow(corrections1)
+originalerror = c()
+for (i in 1:n){
+  thisorginalerror = aftermake[aftermake$insertion == as.character(corrections1[i,]),"error"][1]
+  originalerror = c(originalerror, thisorginalerror)
+}
+result_df = cbind(originalerror,unique(corrections), rawscore,freq_c,channel_ele)
+colnames(result_df) <- c("error", "cor", "Rawscore", "freq(cor)", "Pr(t/c)")
+```

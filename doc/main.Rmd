@@ -112,7 +112,7 @@ In this statercode, we implement the first three rules in the first paper -- rul
 
 ```{r}
 ### only process one of the files in the folder as an example, in your project, you need to use all the files
-current_file_name <- sub(".txt","",file_name_vec[5])
+current_file_name <- sub(".txt", "", file_name_vec[5])
 
 ## read the ground truth text
 current_ground_truth_txt <- readLines(paste("../data/ground_truth/",current_file_name,".txt",sep=""), warn=FALSE)
@@ -123,7 +123,11 @@ clean_tesseract_txt <- paste(current_tesseract_txt, collapse = " ")
 
 ## detect tesseract word error
 tesseract_vec <- str_split(clean_tesseract_txt," ")[[1]] #1124 tokens
-tesseract_if_clean <- unlist(lapply(tesseract_vec,ifCleanToken)) # source code of ifCleanToken in in lib folder
+tesseract_if_clean <- unlist(lapply(tesseract_vec, ifCleanToken)) # source code of ifCleanToken in in lib folder
+
+sum(tesseract_if_clean == TRUE)
+
+sum(tesseract_if_clean == FALSE)
 ```
 
 # Step 4 - Error correction
@@ -151,6 +155,12 @@ The referenced papers are:
 Here, in our code, we just simply remove the detected-errors.
 ```{r}
 tesseract_delete_error_vec <- tesseract_vec[tesseract_if_clean] #1095
+
+library(tm)
+
+data("AssociatedPress", package = "topicmodels")
+
+
 ```
 
 # Step 5 - Performance measure
@@ -203,3 +213,14 @@ Besides the above required measurement, you are encouraged the explore more eval
 
 2. Kukich, K. (1992). *Techniques for automatically correcting words in text*. Acm Computing Surveys (CSUR), 24(4), 377-439. [pdf](http://www.unige.ch/eti/ptt/docs/kukich-92.pdf)
 (This paper is the benchmark review paper)
+
+
+```{r}
+library(devtools)
+
+install_github('andreacirilloac/updateR')
+
+library(updateR)
+
+updateR(admin_password = 'Admin user password')
+```
