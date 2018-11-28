@@ -95,7 +95,7 @@ correction <- function(row){
 final_deletion_can <- (t(apply(delete_candidate, 1, correction)))
 
 final_final <- as.matrix(cbind(delete_candidate, Word = final_deletion_can[, 2])) # deletion candidate without score
-colnames(final_final) <- c("originalerror", "words", "rawscore", "freq_c", "channel_ele")
+
 
 # Read deletion confusion matrix
 cm <- read.csv("del_matrix.csv", row.names = 1, header = TRUE)
