@@ -20,7 +20,7 @@ Term: Fall 2018
 
 Jin, Xin : Error detection implementation, error correction substitution score section, created the ground truth dictionary, whole algorithm implementation on character level.
 
-Wang, Binhan: Error detection check, error correction deletion score section, candidates combination and selection, cleaned github repository, edited final `main_notebook` report file.
+Wang, Binhan: Error detection check, error correction deletion score section, candidates combination and selection, whole algorithm implementation on word level, cleaned github repository, edited final `main_notebook` report file.
 
 Wang, Yujia: Error detection check, error correction deletion section, construct evaluation procedure, prepare and deliver presentation.
 
